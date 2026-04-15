@@ -9,6 +9,7 @@ import wastemanagementsystem.model.*;
 import java.sql.*;
 import java.util.*;
 
+
 public class WasteManagementSystem 
 {
 
@@ -34,9 +35,10 @@ public class WasteManagementSystem
         int choice = 0;
         do {
             System.out.println("\n--- GreenTrack Waste System ---");
-            System.out.println("1. Register Household | 2. Register Collector | 3. Submit Waste");
-            System.out.println("4. View All Waste      | 5. Calculate Eco-Impact | 6. System Report");
-            System.out.println("7. Mark Collected      | 8. Search by Area       | 9. Exit");
+            System.out.println("1. Register Household   | 2. Register Collector    | 3. Submit Waste");
+            System.out.println("4. View All Waste       | 5. Calculate Eco-Impact  | 6. System Report");
+            System.out.println("7. Mark Collected       | 8. Search by Area        | 9. Delete Household");
+            System.out.println("10. Exit");
             System.out.print("Choice: ");
             try 
             {
@@ -51,7 +53,7 @@ public class WasteManagementSystem
             }
         } 
         
-        while (choice != 9);
+        while (choice != 10);
     }
 
     private void process(int choice) {
@@ -72,30 +74,79 @@ public class WasteManagementSystem
             break;
             case 8 : searchByArea();
             break;
-            case 9 : System.out.println("Goodbye.");
+            case 9 : deleteHousehold();
+            break;
+            case 10 : System.out.println("Goodbye");
             break;
             
             default : System.out.println("Invalid.");
         }
     }
-
-    private void registerHousehold() {
-        System.out.print("ID (Digits): "); String id = scan.nextLine();
-        if (!id.matches("\\d+")) { System.out.println("Digits only!"); return; }
-        
-        System.out.print("Name: "); String name = scan.nextLine();
-        System.out.print("Contact: "); String contact = scan.nextLine();
-        System.out.print("Address/Area: "); String addr = scan.nextLine();
-
-        Household h = new Household(id, name, contact, addr);
-        Collector c = collectors.findCollectorByArea(addr);
-        if (c != null) {
-            h.setAssignedCollector(c);
-            System.out.println("Assigned to: " + c.getName());
-        }
-        houseList.AddHouse(h);
-        System.out.println("Household saved.");
+    
+    private void deleteHousehold() {
+    System.out.print("Enter Household ID to delete: ");
+    String id = scan.nextLine();
+    
+    // Safety check: Ask for confirmation
+    System.out.print("Are you sure? This will permanently delete all waste logs for this house (yes/no): ");
+    String confirm = scan.nextLine();
+    
+    if (confirm.equalsIgnoreCase("yes")) {
+        houseList.deleteHouse(id);
+    } else {
+        System.out.println("Deletion cancelled.");
     }
+}
+    
+
+   private void registerHousehold() {
+    String id = "";
+    // 1. Validate Household ID
+    while (true) {
+        System.out.print("Enter Household ID (4 digits, must start with 2): ");
+        id = scan.nextLine().trim();
+
+        // Regex: ^2 checks start, \d{3} checks for 3 more digits, $ ensures no extra characters
+        if (id.matches("^2\\d{3}$")) {
+            if (houseList.findHouse(id) == null) {
+                break; // Valid and unique!
+            } else {
+                System.out.println("Error: This ID is already registered in the database.");
+            }
+        } else {
+            System.out.println("Invalid ID! It must be exactly 4 digits and start with '2'.");
+        }
+    }
+
+    System.out.print("Enter Head Name: ");
+    String name = scan.nextLine();
+
+    // 2. Validate Contact Number
+    String contact = "";
+    while (true) {
+        System.out.print("Enter Contact Number (exactly 10 digits): ");
+        contact = scan.nextLine().trim();
+
+        if (contact.matches("^\\d{10}$")) {
+            break; // Valid length!
+        } else {
+            System.out.println("Invalid Contact! Please enter exactly 10 digits (no letters or spaces).");
+        }
+    }
+
+    System.out.print("Enter Address/Area: ");
+    String addr = scan.nextLine();
+
+    // Create and save
+    Household h = new Household(id, name, contact, addr);
+    
+    // Auto-link collector (from previous logic)
+    Collector c = collectors.findCollectorByArea(addr);
+    if (c != null) h.setAssignedCollector(c);
+
+    houseList.AddHouse(h);
+    System.out.println("Household successfully registered.");
+}
 
     private void registerCollector() {
         System.out.print("ID: "); int id = scan.nextInt(); scan.nextLine();

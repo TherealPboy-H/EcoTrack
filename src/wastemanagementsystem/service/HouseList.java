@@ -126,6 +126,41 @@ public class HouseList {
         } catch (SQLException e) { }
         return list;
     }
+    
+    public void deleteHouse(String id) {
+    String deleteWasteSql = "DELETE FROM Waste WHERE HouseholdID = ?";
+    String deleteHouseSql = "DELETE FROM Household WHERE HouseholdID = ?";
+
+    try (Connection conn = WasteManagementSystem.getConnection()) {
+        // Start transaction
+        conn.setAutoCommit(false); 
+
+        try (PreparedStatement pstmtWaste = conn.prepareStatement(deleteWasteSql);
+             PreparedStatement pstmtHouse = conn.prepareStatement(deleteHouseSql)) {
+
+            // 1. Delete associated waste first
+            pstmtWaste.setString(1, id);
+            pstmtWaste.executeUpdate();
+
+            // 2. Delete the household
+            pstmtHouse.setString(1, id);
+            int affectedRows = pstmtHouse.executeUpdate();
+
+            if (affectedRows > 0) {
+                conn.commit(); // Save changes
+                System.out.println("Household " + id + " and all its waste records have been deleted.");
+            } else {
+                System.out.println("Error: Household ID '" + id + "' not found.");
+                conn.rollback(); 
+            }
+        } catch (SQLException e) {
+            conn.rollback(); // Undo everything if an error occurs
+            System.out.println("Database error during deletion: " + e.getMessage());
+        }
+    } catch (SQLException e) {
+        System.out.println("Connection error: " + e.getMessage());
+    }
+}
 
     public int getSumHouses() {
         try (Connection conn = WasteManagementSystem.getConnection();
