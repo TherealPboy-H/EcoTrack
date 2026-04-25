@@ -1,2 +1,2 @@
 # EcoTrack
-This is a jAVA waste management system that captures information in a database about households responsible for submitting waste and collectors responsible for collecting it. 
+This is a JAVA waste management system that captures information in a database about households responsible for submitting waste and collectors responsible for collecting it. 
