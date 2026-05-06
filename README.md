@@ -1,2 +1,2 @@
-# EcoTrack (Project is Master branch)
+# EcoTrack (Project is in Master branch)
 This is a JAVA waste management system that captures information in a database about households responsible for submitting waste and collectors responsible for collecting it. 
